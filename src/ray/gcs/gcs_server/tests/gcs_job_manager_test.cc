@@ -55,13 +55,16 @@ class GcsJobManagerTest : public ::testing::Test {
           return std::make_shared<rpc::MockCoreWorkerClientConfigurableRunningTasks>(
               address.port());
         });
+    fake_ray_event_recorder_ = std::make_unique<observability::FakeRayEventRecorder>();
     gcs_job_manager_ = std::make_unique<gcs::GcsJobManager>(*gcs_table_storage_,
                                                             *gcs_publisher_,
                                                             runtime_env_manager_,
                                                             *function_manager_,
                                                             *fake_kv_,
                                                             io_service_,
-                                                            *worker_client_pool_);
+                                                            *worker_client_pool_,
+                                                            *fake_ray_event_recorder_,
+                                                            "test_session_name");
   }
 
   ~GcsJobManagerTest() {
@@ -82,6 +85,7 @@ class GcsJobManagerTest : public ::testing::Test {
   RuntimeEnvManager runtime_env_manager_;
   const std::chrono::milliseconds timeout_ms_{5000};
   std::unique_ptr<gcs::GcsJobManager> gcs_job_manager_;
+  std::unique_ptr<observability::FakeRayEventRecorder> fake_ray_event_recorder_;
 };
 
 TEST_F(GcsJobManagerTest, TestFakeInternalKV) {
@@ -607,7 +611,9 @@ TEST_F(GcsJobManagerTest, TestMarkJobFinishedIdempotency) {
                                      *function_manager_,
                                      *fake_kv_,
                                      io_service_,
-                                     *worker_client_pool_);
+                                     *worker_client_pool_,
+                                     *fake_ray_event_recorder_,
+                                     "test_session_name");
 
   auto job_id = JobID::FromInt(1);
   gcs::GcsInitData gcs_init_data(*gcs_table_storage_);

@@ -20,8 +20,8 @@
 #include "ray/common/ray_config.h"
 #include "ray/observability/ray_driver_job_definition_event.h"
 #include "ray/observability/ray_driver_job_execution_event.h"
-#include "src/ray/protobuf/public/events_base_event.pb.h"
 #include "src/ray/protobuf/gcs.pb.h"
+#include "src/ray/protobuf/public/events_base_event.pb.h"
 #include "src/ray/protobuf/public/events_driver_job_execution_event.pb.h"
 
 namespace ray {
@@ -55,7 +55,6 @@ class RayEventRecorderTest : public ::testing::Test {
 
   instrumented_io_context io_service_;
   std::vector<rpc::events::RayEvent> recorded_events_;
-  std::unique_ptr<MockEventAggregatorClient> mock_client_;
   std::unique_ptr<RayEventRecorder> recorder_;
 };
 

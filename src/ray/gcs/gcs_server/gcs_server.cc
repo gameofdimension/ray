@@ -255,9 +255,10 @@ void GcsServer::DoStart(const GcsInitData &gcs_init_data) {
   InitGcsAutoscalerStateManager(gcs_init_data);
   InitUsageStatsClient();
 
-  // Init OpenTelemetry exporter.
+  // Init metrics and event exporter.
   metrics_agent_client_->WaitForServerReady([this](const Status &server_status) {
     stats::InitOpenTelemetryExporter(config_.metrics_agent_port, server_status);
+    ray_event_recorder_->StartExportingEvents();
   });
 
   // Start RPC server when all tables have finished loading initial
@@ -447,7 +448,8 @@ void GcsServer::InitGcsJobManager(const GcsInitData &gcs_init_data) {
                                       kv_manager_->GetInstance(),
                                       io_context_provider_.GetDefaultIOContext(),
                                       worker_client_pool_,
-                                      *ray_event_recorder_);
+                                      *ray_event_recorder_,
+                                      config_.session_name);
   gcs_job_manager_->Initialize(gcs_init_data);
 
   rpc_server_.RegisterService(std::make_unique<rpc::JobInfoGrpcService>(
