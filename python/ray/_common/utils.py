@@ -5,12 +5,35 @@ import importlib
 import inspect
 from inspect import signature
 import os
+import threading
 import psutil
 import random
 import string
 import sys
 import tempfile
 from typing import Any, Coroutine, Dict, Optional
+import abc
+
+
+class Singleton(abc.ABCMeta):
+    """Singleton Abstract Base Class
+
+    https://stackoverflow.com/questions/33364070/implementing
+    -singleton-as-metaclass-but-for-abstract-classes
+    """
+
+    _instances = {}
+    _singleton_lock = threading.Lock()
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            with cls._singleton_lock:
+                # Double-check locking pattern
+                if cls not in cls._instances:
+                    cls._instances[cls] = super(Singleton, cls).__call__(
+                        *args, **kwargs
+                    )
+        return cls._instances[cls]
 
 
 def import_attr(full_path: str, *, reload_module: bool = False):

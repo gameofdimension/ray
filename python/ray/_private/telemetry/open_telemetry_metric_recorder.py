@@ -8,6 +8,7 @@ from opentelemetry.exporter.prometheus import PrometheusMetricReader
 from opentelemetry.metrics import Observation
 from opentelemetry.sdk.metrics import MeterProvider
 
+from ray._common.utils import Singleton
 from ray._private.metrics_agent import Record
 from ray._private.telemetry.metric_cardinality import MetricCardinality
 
@@ -16,11 +17,14 @@ logger = logging.getLogger(__name__)
 NAMESPACE = "ray"
 
 
-class OpenTelemetryMetricRecorder:
+class OpenTelemetryMetricRecorder(metaclass=Singleton):
     """
     A class to record OpenTelemetry metrics. This is the main entry point for exporting
     all ray telemetries to Prometheus server.
     It uses OpenTelemetry's Prometheus exporter to export metrics.
+
+    This class implements the singleton pattern to ensure only one instance exists
+    and prevents conflicts with the global OpenTelemetry meter provider.
     """
 
     def __init__(self):
